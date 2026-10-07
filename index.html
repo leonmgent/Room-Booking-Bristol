@@ -75,6 +75,13 @@ if (!room) {
     </div>
     <footer>If the room's already taken, it'll decline the request automatically and you'll get an email.</footer>`;
 
+  // Teams wants long ISO 8601 with a timezone offset and no milliseconds
+  const iso = d => {
+    const p = n => String(Math.abs(n)).padStart(2, "0");
+    const off = -d.getTimezoneOffset();
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:00` +
+           `${off >= 0 ? "+" : "-"}${p(Math.floor(Math.abs(off)/60))}:${p(Math.abs(off)%60)}`;
+  };
   const fmt = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   function update() {
@@ -87,14 +94,14 @@ if (!room) {
     const teams = new URL("https://teams.microsoft.com/l/meeting/new");
     teams.searchParams.set("subject", subject);
     teams.searchParams.set("attendees", room.email);
-    teams.searchParams.set("startTime", start.toISOString());
-    teams.searchParams.set("endTime", end.toISOString());
+    teams.searchParams.set("startTime", iso(start));
+    teams.searchParams.set("endTime", iso(end));
 
     const outlook = new URL("https://outlook.office.com/calendar/action/compose");
     outlook.searchParams.set("subject", subject);
     outlook.searchParams.set("to", room.email);
-    outlook.searchParams.set("startdt", start.toISOString());
-    outlook.searchParams.set("enddt", end.toISOString());
+    outlook.searchParams.set("startdt", iso(start));
+    outlook.searchParams.set("enddt", iso(end));
 
     document.getElementById("teams").href = teams.toString();
     document.getElementById("outlook").href = outlook.toString();
